@@ -1,10 +1,11 @@
-﻿using UnityEngine;
-    using UnityEngine.AI;
+using UnityEngine;
+using UnityEngine.AI;
+// ReSharper disable InconsistentNaming
 
 public class EnemyFSM : MonoBehaviour
 {
     public enum EnemyState { GoToBase, AttackBase, ChasePlayer, AttackPlayer }
-    
+
     public EnemyState currentState;
 
     float lastShootTime;
@@ -16,43 +17,52 @@ public class EnemyFSM : MonoBehaviour
     public Sight sightSensor;
     public float baseAttackDistance;
     public float playerAttackDistance;
+    public ParticleSystem muzzleEffect;
+    public AudioSource shootSound;
+
+    Animator animator;
 
     void Awake()
     {
         baseTransform = GameObject.Find("BaseDamagePoint").transform;
         agent = GetComponentInParent<NavMeshAgent>();
+        animator = GetComponentInParent<Animator>();
     }
 
     void Update()
     {
-        if(currentState == EnemyState.GoToBase)
+        if (currentState == EnemyState.GoToBase)
             GoToBase();
-        else if(currentState == EnemyState.AttackBase)
+        else if (currentState == EnemyState.AttackBase)
             AttackBase();
-        else if(currentState == EnemyState.ChasePlayer)
+        else if (currentState == EnemyState.ChasePlayer)
             ChasePlayer();
-        else if(currentState == EnemyState.AttackPlayer)
+        else if (currentState == EnemyState.AttackPlayer)
             AttackPlayer();
     }
-    
+
 
     void GoToBase()
     {
+        animator.SetBool("Shooting", false);
         agent.isStopped = false;
-        
+
         agent.SetDestination(baseTransform.position);
-        
+
         if (sightSensor.detectedObject != null)
             currentState = EnemyState.ChasePlayer;
 
-        float distanceToBase = Vector3.Distance(transform.position, baseTransform.position);
-        if (distanceToBase < baseAttackDistance)
+        float distanceToBase = Vector3.Distance(
+            transform.position,
+            baseTransform.position);
+
+        if (distanceToBase <= baseAttackDistance)
             currentState = EnemyState.AttackBase;
     }
 
-
     void ChasePlayer()
     {
+        animator.SetBool("Shooting", false);
         agent.isStopped = false;
 
         if (sightSensor.detectedObject == null)
@@ -81,7 +91,7 @@ public class EnemyFSM : MonoBehaviour
 
         LookTo(sightSensor.detectedObject.transform.position);
         Shoot();
-        
+
         float distanceToPlayer = Vector3.Distance(transform.position, sightSensor.detectedObject.transform.position);
         if (distanceToPlayer > playerAttackDistance * 1.1f)
             currentState = EnemyState.ChasePlayer;
@@ -103,21 +113,27 @@ public class EnemyFSM : MonoBehaviour
 
     void Shoot()
     {
-        var timeSinceLastShoot = Time.time - lastShootTime;
-        if(timeSinceLastShoot < fireRate)
-            return;
+        animator.SetBool("Shooting", true);
 
-        lastShootTime = Time.time;
-        Instantiate(bulletPrefab, transform.position, transform.rotation);
+        if (Time.timeScale > 0)
+        {
+            var timeSinceLastShoot = Time.time - lastShootTime;
+            if (timeSinceLastShoot < fireRate)
+                return;
+
+            lastShootTime = Time.time;
+            Instantiate(bulletPrefab, transform.position, transform.rotation);
+            muzzleEffect.Play();
+            shootSound.Play();
+        }
     }
 
     void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, playerAttackDistance);
-        
+
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, baseAttackDistance);
     }
 }
-
