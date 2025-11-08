@@ -9,9 +9,10 @@ EditorBuildSettings:
     path: Assets/Chapter 17 (CSharp)/Game_Chapter17.unity
     guid: 11e32021e0a334e2ea8c07785b40b737
   - enabled: 1
-    path: Assets/Chapter 08 (CSharp)/WinScreen.unity
+    path: Assets/Prereqs/Chapter 08 (CSharp)/WinScreen.unity
     guid: 78b8efda0c7f9be47b78cc7bd0652e98
   - enabled: 1
-    path: Assets/Chapter 08 (CSharp)/LoseScreen.unity
+    path: Assets/Prereqs/Chapter 08 (CSharp)/LoseScreen.unity
     guid: 74a0d1ec2421e774eb2ab6259eaffdff
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0
